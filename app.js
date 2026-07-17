@@ -160,6 +160,23 @@
       .replace(/\s+/g, "-");
   }
 
+  function userClass(user) {
+    if (!user) return "user-unassigned";
+    const key = String(user)
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    return `user-${key}`;
+  }
+
+  function assigneeBadgeHtml(user) {
+    if (!user) {
+      return `<span class="assignee-empty">Unassigned</span>`;
+    }
+    return `<span class="assignee-badge ${userClass(user)}">${escapeHtml(user)}</span>`;
+  }
+
   function isCompletedStatus(status) {
     return status === "Complete" || status === "Billing Complete";
   }
@@ -292,13 +309,7 @@
             <strong>${escapeHtml(p.project || "—")}</strong>
           </span>
         </td>
-        <td class="assignee-col">
-          ${
-            p.user
-              ? `<span class="assignee-badge">${escapeHtml(p.user)}</span>`
-              : `<span class="assignee-empty">Unassigned</span>`
-          }
-        </td>
+        <td class="assignee-col">${assigneeBadgeHtml(p.user)}</td>
         <td class="status-col">
           <span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span>
         </td>
