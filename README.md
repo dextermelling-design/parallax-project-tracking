@@ -12,7 +12,7 @@ Web app for tracking Parallax projects and work orders.
 | Address | Job site address |
 | Update | Latest status update |
 | Scheduled | Scheduled date |
-| Status | Open / Scheduled / In Progress / On Hold / Completed / Cancelled |
+| Status | Not Yet Started, Complete, On Hold, In Progress, Waiting on other, Scheduled, Port Submitted, Parts Ordered, Ready for Billing, Billing Complete, Disregard, Needs Quoted |
 | User | Assigned user |
 | WO | Work order number |
 | NRC | Non-recurring charge |

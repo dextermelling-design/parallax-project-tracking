@@ -85,8 +85,23 @@
     return `${m[2]}/${m[3]}/${m[1]}`;
   }
 
+  const STATUSES = [
+    "Not Yet Started",
+    "In Progress",
+    "Scheduled",
+    "On Hold",
+    "Waiting on other",
+    "Port Submitted",
+    "Parts Ordered",
+    "Needs Quoted",
+    "Ready for Billing",
+    "Billing Complete",
+    "Complete",
+    "Disregard",
+  ];
+
   function statusClass(status) {
-    return String(status || "open")
+    return String(status || "not-yet-started")
       .toLowerCase()
       .replace(/\s+/g, "-");
   }
@@ -120,12 +135,18 @@
 
   function renderStats(list) {
     const all = projects;
+    const active = all.filter(
+      (p) => p.status !== "Complete" && p.status !== "Disregard" && p.status !== "Billing Complete"
+    ).length;
+    const complete = all.filter((p) => p.status === "Complete").length;
+    const inProgress = all.filter((p) => p.status === "In Progress").length;
+    const onHold = all.filter((p) => p.status === "On Hold").length;
     const counts = {
       Total: all.length,
-      Open: all.filter((p) => p.status === "Open").length,
-      Scheduled: all.filter((p) => p.status === "Scheduled").length,
-      "In Progress": all.filter((p) => p.status === "In Progress").length,
-      Completed: all.filter((p) => p.status === "Completed").length,
+      Active: active,
+      "In Progress": inProgress,
+      "On Hold": onHold,
+      Complete: complete,
       Showing: list.length,
     };
 
@@ -206,11 +227,11 @@
     for (const key of FIELDS) {
       const el = document.getElementById(`field-${key}`);
       if (!el) continue;
-      el.value = project?.[key] || (key === "status" ? "Open" : "");
+      el.value = project?.[key] || (key === "status" ? "Not Yet Started" : "");
     }
     if (!project) {
       document.getElementById("field-openDate").value = today();
-      document.getElementById("field-status").value = "Open";
+      document.getElementById("field-status").value = "Not Yet Started";
     }
 
     els.modal.hidden = false;
@@ -230,7 +251,9 @@
       const el = document.getElementById(`field-${key}`);
       data[key] = el ? el.value.trim() : "";
     }
-    if (!data.status) data.status = "Open";
+    if (!data.status || !STATUSES.includes(data.status)) {
+      data.status = "Not Yet Started";
+    }
     return data;
   }
 
@@ -281,8 +304,8 @@
     if (idx >= 0) projects[idx] = data;
     else projects.unshift(data);
 
-    // Auto-set completed date when status becomes Completed
-    if (data.status === "Completed" && !data.completedDate) {
+    // Auto-set completed date when status becomes Complete
+    if (data.status === "Complete" && !data.completedDate) {
       data.completedDate = today();
       const i = projects.findIndex((p) => p.id === data.id);
       if (i >= 0) projects[i] = data;
@@ -340,7 +363,7 @@
         address: "123 Main St, Richmond, IN",
         update: "Awaiting equipment",
         scheduled: "",
-        status: "Open",
+        status: "Not Yet Started",
         user: "",
         wo: "WO-1001",
         nrc: "",
