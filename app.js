@@ -274,7 +274,7 @@
     }
 
     const frag = document.createDocumentFragment();
-    const colCount = 3;
+    const colCount = 4;
 
     for (const p of list) {
       const isOpen = expandedId === p.id;
@@ -292,6 +292,9 @@
               ? `<span class="assignee-badge">${escapeHtml(p.user)}</span>`
               : `<span class="assignee-empty">Unassigned</span>`
           }
+        </td>
+        <td class="status-col">
+          <span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span>
         </td>
         <td class="date-col">${formatDate(p.openDate)}</td>
         <td>
