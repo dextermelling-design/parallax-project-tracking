@@ -43,6 +43,8 @@
   let sortDir = -1; // newest first
   let editingId = null;
   /** @type {string | null} */
+  let expandedId = null;
+  /** @type {string | null} */
   let pendingDeleteId = null;
 
   const els = {
@@ -212,17 +214,30 @@
     }
 
     const frag = document.createDocumentFragment();
+    const colCount = 14;
 
     for (const p of list) {
+      const isOpen = expandedId === p.id;
       const tr = document.createElement("tr");
+      tr.className = `job-row${isOpen ? " is-expanded" : ""}`;
+      tr.dataset.id = p.id;
+      tr.setAttribute("tabindex", "0");
+      tr.setAttribute("role", "button");
+      tr.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      tr.title = "Click to expand details";
       tr.innerHTML = `
         <td>${formatDate(p.openDate)}</td>
         <td>${formatDate(p.completedDate)}</td>
-        <td><strong>${escapeHtml(p.project || "—")}</strong></td>
+        <td>
+          <span class="job-name">
+            <span class="chevron" aria-hidden="true">${isOpen ? "▼" : "▶"}</span>
+            <strong>${escapeHtml(p.project || "—")}</strong>
+          </span>
+        </td>
         <td class="cell-clip" title="${escapeAttr(p.address || "")}">${escapeHtml(p.address || "—")}</td>
         <td class="cell-clip" title="${escapeAttr(p.update || "")}">${escapeHtml(p.update || "—")}</td>
         <td>${formatDate(p.scheduled)}</td>
-        <td><span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Open")}</span></td>
+        <td><span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span></td>
         <td>${escapeHtml(p.user || "—")}</td>
         <td><span class="mono">${escapeHtml(p.wo || "—")}</span></td>
         <td>${escapeHtml(p.nrc || "—")}</td>
@@ -235,6 +250,39 @@
         </td>
       `;
       frag.appendChild(tr);
+
+      if (isOpen) {
+        const detail = document.createElement("tr");
+        detail.className = "detail-row";
+        detail.innerHTML = `
+          <td colspan="${colCount}">
+            <div class="detail-panel">
+              <div class="detail-header">
+                <h3>${escapeHtml(p.project || "Untitled project")}</h3>
+                <span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span>
+              </div>
+              <div class="detail-grid">
+                ${FIELDS.map(
+                  (key) => `
+                  <div class="detail-item${key === "notes" || key === "update" || key === "address" ? " span-2" : ""}">
+                    <span class="detail-label">${HEADERS[key]}</span>
+                    <span class="detail-value${key === "notes" ? " detail-notes" : ""}">${
+                      key.includes("Date") || key === "scheduled"
+                        ? formatDate(p[key])
+                        : escapeHtml(p[key] || "—")
+                    }</span>
+                  </div>`
+                ).join("")}
+              </div>
+              <div class="detail-actions">
+                <button type="button" class="btn btn-ghost btn-sm" data-collapse="${p.id}">Collapse</button>
+                <button type="button" class="btn btn-primary btn-sm" data-edit="${p.id}">Edit project</button>
+              </div>
+            </div>
+          </td>
+        `;
+        frag.appendChild(detail);
+      }
     }
 
     els.body.appendChild(frag);
@@ -432,17 +480,52 @@
     const t = e.target;
     if (!(t instanceof HTMLElement)) return;
 
-    const editId = t.getAttribute("data-edit");
-    if (editId) {
+    const editId = t.getAttribute("data-edit") || t.closest("[data-edit]")?.getAttribute("data-edit");
+    if (editId && (t.matches("[data-edit]") || t.closest("[data-edit]"))) {
+      e.stopPropagation();
       const project = projects.find((p) => p.id === editId);
       if (project) openModal(project);
       return;
     }
 
-    const deleteId = t.getAttribute("data-delete");
-    if (deleteId) {
+    const deleteId = t.getAttribute("data-delete") || t.closest("[data-delete]")?.getAttribute("data-delete");
+    if (deleteId && (t.matches("[data-delete]") || t.closest("[data-delete]"))) {
+      e.stopPropagation();
       requestDelete(deleteId);
+      return;
     }
+
+    const collapseId = t.getAttribute("data-collapse");
+    if (collapseId) {
+      expandedId = null;
+      render();
+      return;
+    }
+
+    // Click row (or inside detail panel empty area) to toggle expand
+    const row = t.closest("tr.job-row");
+    if (row && row.dataset.id) {
+      const id = row.dataset.id;
+      expandedId = expandedId === id ? null : id;
+      render();
+      // Keep expanded row in view
+      if (expandedId) {
+        requestAnimationFrame(() => {
+          const open = els.body.querySelector(`tr.job-row[data-id="${expandedId}"]`);
+          open?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        });
+      }
+    }
+  });
+
+  els.body.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const row = e.target instanceof HTMLElement ? e.target.closest("tr.job-row") : null;
+    if (!row?.dataset.id) return;
+    e.preventDefault();
+    const id = row.dataset.id;
+    expandedId = expandedId === id ? null : id;
+    render();
   });
 
   document.querySelectorAll(".data-table th[data-sort]").forEach((th) => {

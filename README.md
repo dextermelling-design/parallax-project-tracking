@@ -37,8 +37,9 @@ Data is stored in the browser (`localStorage`) on each device.
 ## Features
 
 - Anyone can view, add, and edit projects
+- **Click a job row to expand full details**
 - **Delete requires a password** (default: `parallax`)
-- Search and filter by status
+- Search and filter by status / user
 - Sortable columns
 - CSV export
 - Stats summary

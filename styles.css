@@ -258,8 +258,126 @@ textarea {
   color: var(--accent);
 }
 
-.data-table tbody tr:hover {
+.data-table tbody tr.job-row {
+  cursor: pointer;
+}
+
+.data-table tbody tr.job-row:hover {
   background: rgba(56, 189, 248, 0.05);
+}
+
+.data-table tbody tr.job-row.is-expanded {
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.data-table tbody tr.job-row:focus-visible {
+  outline: 2px solid rgba(56, 189, 248, 0.55);
+  outline-offset: -2px;
+}
+
+.job-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.chevron {
+  display: inline-flex;
+  width: 0.9rem;
+  color: var(--accent);
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+
+.detail-row > td {
+  padding: 0 !important;
+  background: #0f1729;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.detail-panel {
+  padding: 1.15rem 1.25rem 1.25rem;
+  background:
+    linear-gradient(180deg, rgba(56, 189, 248, 0.06), transparent 40%),
+    #101827;
+}
+
+.detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.detail-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+}
+
+.detail-item {
+  background: rgba(26, 36, 58, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  min-width: 0;
+}
+
+.detail-item.span-2 {
+  grid-column: span 2;
+}
+
+.detail-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+  font-weight: 700;
+}
+
+.detail-value {
+  display: block;
+  color: var(--text);
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.detail-notes {
+  white-space: pre-wrap;
+  color: #cbd5e1;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1100px) {
+  .detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-item.span-2 {
+    grid-column: span 1;
+  }
 }
 
 .data-table .col-actions {
