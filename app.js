@@ -301,7 +301,6 @@
         <td class="cell-notes">${escapeHtml(p.notes || "—")}</td>
         <td class="col-actions">
           <button type="button" class="btn btn-ghost btn-sm" data-edit="${p.id}">Edit</button>
-          <button type="button" class="btn btn-danger btn-sm" data-delete="${p.id}">Delete</button>
         </td>
       `;
       frag.appendChild(tr);
@@ -339,6 +338,7 @@
               <div class="detail-actions">
                 <button type="button" class="btn btn-ghost btn-sm" data-collapse="${p.id}">Collapse</button>
                 <button type="button" class="btn btn-primary btn-sm" data-edit="${p.id}">Edit project</button>
+                <button type="button" class="btn btn-danger btn-sm" data-delete="${p.id}">Delete</button>
               </div>
             </div>
           </td>
