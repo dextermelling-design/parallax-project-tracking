@@ -40,8 +40,8 @@
 
   /** @type {Array<Record<string, string>>} */
   let projects = load();
-  let sortKey = "openDate";
-  let sortDir = -1; // newest first
+  let sortKey = "user";
+  let sortDir = 1;
   let editingId = null;
   /** @type {string | null} */
   let expandedId = null;
@@ -254,7 +254,7 @@
     }
 
     const frag = document.createDocumentFragment();
-    const colCount = 14;
+    const colCount = 3;
 
     for (const p of list) {
       const isOpen = expandedId === p.id;
@@ -266,27 +266,6 @@
       tr.setAttribute("aria-expanded", isOpen ? "true" : "false");
       tr.title = "Click to expand details";
       tr.innerHTML = `
-        <td>${formatDate(p.openDate)}</td>
-        <td>${formatDate(p.completedDate)}</td>
-        <td>
-          <span class="job-name">
-            <span class="chevron" aria-hidden="true">${isOpen ? "▼" : "▶"}</span>
-            <span class="job-title-block">
-              <strong>${escapeHtml(p.project || "—")}</strong>
-              <span class="assignee-line">
-                ${
-                  p.user
-                    ? `<span class="assignee-badge" title="Assigned to">${escapeHtml(p.user)}</span>`
-                    : `<span class="assignee-empty">Unassigned</span>`
-                }
-              </span>
-            </span>
-          </span>
-        </td>
-        <td class="cell-clip" title="${escapeAttr(p.address || "")}">${escapeHtml(p.address || "—")}</td>
-        <td class="cell-clip" title="${escapeAttr(p.update || "")}">${escapeHtml(p.update || "—")}</td>
-        <td>${formatDate(p.scheduled)}</td>
-        <td><span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span></td>
         <td class="assignee-col">
           ${
             p.user
@@ -294,13 +273,12 @@
               : `<span class="assignee-empty">Unassigned</span>`
           }
         </td>
-        <td><span class="mono">${escapeHtml(p.wo || "—")}</span></td>
-        <td>${escapeHtml(p.nrc || "—")}</td>
-        <td>${escapeHtml(p.mrc || "—")}</td>
-        <td class="cell-clip" title="${escapeAttr(p.contact || "")}">${escapeHtml(p.contact || "—")}</td>
-        <td class="cell-notes">${escapeHtml(p.notes || "—")}</td>
-        <td class="col-actions">
-          <button type="button" class="btn btn-ghost btn-sm" data-edit="${p.id}">Edit</button>
+        <td class="date-col">${formatDate(p.openDate)}</td>
+        <td>
+          <span class="job-name">
+            <span class="chevron" aria-hidden="true">${isOpen ? "▼" : "▶"}</span>
+            <strong>${escapeHtml(p.project || "—")}</strong>
+          </span>
         </td>
       `;
       frag.appendChild(tr);
