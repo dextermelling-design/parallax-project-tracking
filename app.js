@@ -236,6 +236,11 @@
     }
 
     list.sort((a, b) => {
+      // Priority jobs always at the top
+      const ap = a.priority ? 1 : 0;
+      const bp = b.priority ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+
       const av = (a[sortKey] || "").toString().toLowerCase();
       const bv = (b[sortKey] || "").toString().toLowerCase();
       if (av < bv) return -1 * sortDir;
@@ -244,6 +249,18 @@
     });
 
     return list;
+  }
+
+  function isPriority(p) {
+    return p.priority === true || p.priority === "true" || p.priority === 1;
+  }
+
+  function setJobPriority(id, value) {
+    const idx = projects.findIndex((p) => p.id === id);
+    if (idx < 0) return;
+    projects[idx] = { ...projects[idx], priority: !!value };
+    save();
+    render();
   }
 
   function renderStats(list) {
@@ -295,8 +312,9 @@
 
     for (const p of list) {
       const isOpen = expandedId === p.id;
+      const priority = isPriority(p);
       const tr = document.createElement("tr");
-      tr.className = `job-row${isOpen ? " is-expanded" : ""}`;
+      tr.className = `job-row${isOpen ? " is-expanded" : ""}${priority ? " is-priority" : ""}`;
       tr.dataset.id = p.id;
       tr.setAttribute("tabindex", "0");
       tr.setAttribute("role", "button");
@@ -306,6 +324,7 @@
         <td>
           <span class="job-name">
             <span class="chevron" aria-hidden="true">${isOpen ? "▼" : "▶"}</span>
+            ${priority ? `<span class="priority-flag" title="Priority">★</span>` : ""}
             <strong>${escapeHtml(p.project || "—")}</strong>
           </span>
         </td>
@@ -319,13 +338,17 @@
 
       if (isOpen) {
         const detail = document.createElement("tr");
-        detail.className = "detail-row";
+        detail.className = `detail-row${priority ? " is-priority" : ""}`;
         detail.innerHTML = `
           <td colspan="${colCount}">
-            <div class="detail-panel">
+            <div class="detail-panel${priority ? " priority-panel" : ""}">
               <div class="detail-header">
                 <h3>${escapeHtml(p.project || "Untitled project")}</h3>
                 ${statusSelectHtml(p.id, p.status)}
+                <label class="priority-toggle" data-stop-expand>
+                  <input type="checkbox" data-priority-change="${escapeAttr(p.id)}" ${priority ? "checked" : ""} />
+                  <span>Priority — keep at top</span>
+                </label>
               </div>
               <div class="detail-grid">
                 ${FIELDS.map((key) => {
@@ -385,6 +408,8 @@
       if (!el) continue;
       el.value = project?.[key] || (key === "status" ? "Not Yet Started" : "");
     }
+    const priorityEl = document.getElementById("field-priority");
+    if (priorityEl) priorityEl.checked = project ? isPriority(project) : false;
     if (!project) {
       document.getElementById("field-openDate").value = today();
       document.getElementById("field-status").value = "Not Yet Started";
@@ -401,7 +426,7 @@
   }
 
   function readForm() {
-    /** @type {Record<string, string>} */
+    /** @type {Record<string, any>} */
     const data = { id: document.getElementById("field-id").value || uid() };
     for (const key of FIELDS) {
       const el = document.getElementById(`field-${key}`);
@@ -413,6 +438,8 @@
     if (data.user && !USERS.includes(data.user)) {
       data.user = "";
     }
+    const priorityEl = document.getElementById("field-priority");
+    data.priority = !!(priorityEl && priorityEl.checked);
     return data;
   }
 
@@ -506,19 +533,33 @@
     syncHideCompleteButton();
   }
 
-  // Inline status change from expanded detail (stop row toggle)
+  // Inline status / priority change from expanded detail (stop row toggle)
   els.body.addEventListener("change", (e) => {
     const t = e.target;
-    if (!(t instanceof HTMLSelectElement)) return;
-    const id = t.getAttribute("data-status-change");
-    if (!id) return;
-    e.stopPropagation();
-    updateJobStatus(id, t.value);
+    if (t instanceof HTMLSelectElement) {
+      const id = t.getAttribute("data-status-change");
+      if (!id) return;
+      e.stopPropagation();
+      updateJobStatus(id, t.value);
+      return;
+    }
+    if (t instanceof HTMLInputElement && t.type === "checkbox") {
+      const id = t.getAttribute("data-priority-change");
+      if (!id) return;
+      e.stopPropagation();
+      setJobPriority(id, t.checked);
+    }
   });
 
   els.body.addEventListener("click", (e) => {
     const t = e.target;
-    if (t instanceof HTMLElement && t.closest("select[data-status-change]")) {
+    if (!(t instanceof HTMLElement)) return;
+    if (
+      t.closest("select[data-status-change]") ||
+      t.closest("[data-priority-change]") ||
+      t.closest(".priority-toggle") ||
+      t.closest("[data-stop-expand]")
+    ) {
       e.stopPropagation();
     }
   }, true);

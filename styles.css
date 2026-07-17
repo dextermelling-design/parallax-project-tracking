@@ -306,6 +306,91 @@ textarea {
   background: rgba(56, 189, 248, 0.08);
 }
 
+/* Priority jobs — stand out from all others */
+.data-table tbody tr.job-row.is-priority {
+  background: linear-gradient(90deg, rgba(255, 61, 0, 0.22), rgba(255, 145, 0, 0.12) 45%, rgba(255, 61, 0, 0.08));
+  box-shadow: inset 4px 0 0 #ff3d00;
+}
+
+.data-table tbody tr.job-row.is-priority:hover {
+  background: linear-gradient(90deg, rgba(255, 61, 0, 0.3), rgba(255, 145, 0, 0.16) 45%, rgba(255, 61, 0, 0.1));
+}
+
+.data-table tbody tr.job-row.is-priority.is-expanded {
+  background: linear-gradient(90deg, rgba(255, 61, 0, 0.28), rgba(255, 145, 0, 0.14));
+}
+
+.data-table tbody tr.job-row.is-priority .job-name strong {
+  color: #ffd4c2;
+}
+
+.priority-flag {
+  color: #ff6b2c;
+  font-size: 0.95rem;
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(255, 61, 0, 0.55);
+  flex-shrink: 0;
+}
+
+.detail-row.is-priority > td {
+  border-bottom-color: rgba(255, 61, 0, 0.35);
+}
+
+.detail-panel.priority-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 61, 0, 0.12), transparent 45%),
+    #1a1210;
+  border-left: 3px solid #ff3d00;
+}
+
+.priority-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffb199;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 61, 0, 0.4);
+  background: rgba(255, 61, 0, 0.12);
+}
+
+.priority-toggle input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #ff3d00;
+  cursor: pointer;
+}
+
+.priority-check-label {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(255, 61, 0, 0.35);
+  background: rgba(255, 61, 0, 0.1);
+  color: #ffd4c2 !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.priority-check-label input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: #ff3d00;
+  flex-shrink: 0;
+}
+
+.priority-check-label strong {
+  color: #ff8a5c;
+}
+
 .data-table tbody tr.job-row:focus-visible {
   outline: 2px solid rgba(56, 189, 248, 0.55);
   outline-offset: -2px;
