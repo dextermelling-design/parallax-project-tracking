@@ -336,6 +336,60 @@ textarea {
   box-shadow: var(--shadow);
 }
 
+.modal-sm {
+  width: min(420px, 100%);
+}
+
+.password-hint {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.password-error {
+  margin: 0.5rem 0 0;
+  color: #fca5a5;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+#password-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+#password-form input[type="password"] {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  outline: none;
+  width: 100%;
+}
+
+#password-form input[type="password"]:focus {
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.12);
+}
+
+.checkbox-row {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  font-weight: 500 !important;
+  color: var(--text) !important;
+  grid-template-columns: none !important;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
 .modal-header {
   display: flex;
   align-items: center;

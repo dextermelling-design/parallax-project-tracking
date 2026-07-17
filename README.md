@@ -36,8 +36,22 @@ Data is stored in the browser (`localStorage`) on each device.
 
 ## Features
 
-- Add / edit / delete projects
+- Anyone can view, add, and edit projects
+- **Delete requires a password** (default: `parallax`)
 - Search and filter by status
 - Sortable columns
 - CSV export
 - Stats summary
+
+### Change the delete password
+
+1. Create a SHA-256 hex hash of your new password (PowerShell):
+
+```powershell
+$bytes = [Text.Encoding]::UTF8.GetBytes("your-new-password")
+$sha = [Security.Cryptography.SHA256]::Create()
+($sha.ComputeHash($bytes) | ForEach-Object { $_.ToString("x2") }) -join ""
+```
+
+2. Replace `DELETE_PASSWORD_HASH` in `app.js` with that hash.
+3. Commit and push.

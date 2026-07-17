@@ -69,6 +69,32 @@
     </main>
   </div>
 
+  <!-- Delete password modal -->
+  <div class="modal-backdrop" id="password-modal" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="password-title">
+      <header class="modal-header">
+        <h2 id="password-title">Delete requires password</h2>
+        <button type="button" class="icon-btn" id="password-close" aria-label="Close">&times;</button>
+      </header>
+      <form id="password-form" class="modal-body">
+        <p class="password-hint">Anyone can view and edit jobs. A password is required to delete.</p>
+        <label>
+          Password
+          <input type="password" id="delete-password" autocomplete="current-password" required />
+        </label>
+        <p class="password-error" id="password-error" hidden>Incorrect password.</p>
+        <label class="checkbox-row">
+          <input type="checkbox" id="password-remember" checked />
+          Remember for this browser session
+        </label>
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="password-cancel">Cancel</button>
+          <button type="submit" class="btn btn-danger">Delete job</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal -->
   <div class="modal-backdrop" id="modal" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">

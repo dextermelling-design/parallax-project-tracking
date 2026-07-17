@@ -1,5 +1,9 @@
 (() => {
   const STORAGE_KEY = "parallax-project-tracking-v1";
+  const AUTH_SESSION_KEY = "parallax-delete-auth";
+  // SHA-256 of default password "parallax" — change by generating a new hash
+  const DELETE_PASSWORD_HASH =
+    "25d3e422e9a0730c40e6cdf60a841702bcb76c76acf948dc5671a3b8742441fa";
 
   const FIELDS = [
     "openDate",
@@ -38,6 +42,8 @@
   let sortKey = "openDate";
   let sortDir = -1; // newest first
   let editingId = null;
+  /** @type {string | null} */
+  let pendingDeleteId = null;
 
   const els = {
     body: document.getElementById("projects-body"),
@@ -52,6 +58,13 @@
     btnClose: document.getElementById("btn-close"),
     btnCancel: document.getElementById("btn-cancel"),
     btnExport: document.getElementById("btn-export"),
+    passwordModal: document.getElementById("password-modal"),
+    passwordForm: document.getElementById("password-form"),
+    passwordInput: document.getElementById("delete-password"),
+    passwordError: document.getElementById("password-error"),
+    passwordRemember: document.getElementById("password-remember"),
+    passwordClose: document.getElementById("password-close"),
+    passwordCancel: document.getElementById("password-cancel"),
   };
 
   function load() {
@@ -257,6 +270,55 @@
     return data;
   }
 
+  async function sha256Hex(text) {
+    const data = new TextEncoder().encode(text);
+    const hash = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(hash))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  function isDeleteAuthorized() {
+    return sessionStorage.getItem(AUTH_SESSION_KEY) === "1";
+  }
+
+  function setDeleteAuthorized(remember) {
+    if (remember) sessionStorage.setItem(AUTH_SESSION_KEY, "1");
+  }
+
+  function openPasswordModal(deleteId) {
+    pendingDeleteId = deleteId;
+    els.passwordError.hidden = true;
+    els.passwordForm.reset();
+    els.passwordRemember.checked = true;
+    els.passwordModal.hidden = false;
+    els.passwordInput.focus();
+  }
+
+  function closePasswordModal() {
+    pendingDeleteId = null;
+    els.passwordModal.hidden = true;
+    els.passwordForm.reset();
+    els.passwordError.hidden = true;
+  }
+
+  function deleteProject(id) {
+    const project = projects.find((p) => p.id === id);
+    const label = project?.project || "this project";
+    if (!confirm(`Delete "${label}"? This cannot be undone.`)) return;
+    projects = projects.filter((p) => p.id !== id);
+    save();
+    render();
+  }
+
+  async function requestDelete(id) {
+    if (isDeleteAuthorized()) {
+      deleteProject(id);
+      return;
+    }
+    openPasswordModal(id);
+  }
+
   function exportCsv() {
     const list = getFiltered();
     const cols = FIELDS;
@@ -291,8 +353,33 @@
     if (e.target === els.modal) closeModal();
   });
 
+  els.passwordModal.addEventListener("click", (e) => {
+    if (e.target === els.passwordModal) closePasswordModal();
+  });
+  els.passwordClose.addEventListener("click", closePasswordModal);
+  els.passwordCancel.addEventListener("click", closePasswordModal);
+
+  els.passwordForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const entered = els.passwordInput.value;
+    const hash = await sha256Hex(entered);
+    if (hash !== DELETE_PASSWORD_HASH) {
+      els.passwordError.hidden = false;
+      els.passwordInput.select();
+      return;
+    }
+    const id = pendingDeleteId;
+    const remember = els.passwordRemember.checked;
+    closePasswordModal();
+    if (remember) setDeleteAuthorized(true);
+    if (id) deleteProject(id);
+  });
+
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !els.modal.hidden) closeModal();
+    if (e.key === "Escape") {
+      if (!els.passwordModal.hidden) closePasswordModal();
+      else if (!els.modal.hidden) closeModal();
+    }
   });
 
   els.form.addEventListener("submit", (e) => {
@@ -329,13 +416,7 @@
 
     const deleteId = t.getAttribute("data-delete");
     if (deleteId) {
-      const project = projects.find((p) => p.id === deleteId);
-      const label = project?.project || "this project";
-      if (confirm(`Delete "${label}"?`)) {
-        projects = projects.filter((p) => p.id !== deleteId);
-        save();
-        render();
-      }
+      requestDelete(deleteId);
     }
   });
 
