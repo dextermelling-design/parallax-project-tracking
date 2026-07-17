@@ -30,7 +30,7 @@
     update: "Update",
     scheduled: "Scheduled",
     status: "Status",
-    user: "User",
+    user: "Assigned",
     wo: "WO",
     nrc: "NRC",
     mrc: "MRC",
@@ -271,14 +271,29 @@
         <td>
           <span class="job-name">
             <span class="chevron" aria-hidden="true">${isOpen ? "▼" : "▶"}</span>
-            <strong>${escapeHtml(p.project || "—")}</strong>
+            <span class="job-title-block">
+              <strong>${escapeHtml(p.project || "—")}</strong>
+              <span class="assignee-line">
+                ${
+                  p.user
+                    ? `<span class="assignee-badge" title="Assigned to">${escapeHtml(p.user)}</span>`
+                    : `<span class="assignee-empty">Unassigned</span>`
+                }
+              </span>
+            </span>
           </span>
         </td>
         <td class="cell-clip" title="${escapeAttr(p.address || "")}">${escapeHtml(p.address || "—")}</td>
         <td class="cell-clip" title="${escapeAttr(p.update || "")}">${escapeHtml(p.update || "—")}</td>
         <td>${formatDate(p.scheduled)}</td>
         <td><span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span></td>
-        <td>${escapeHtml(p.user || "—")}</td>
+        <td class="assignee-col">
+          ${
+            p.user
+              ? `<span class="assignee-badge">${escapeHtml(p.user)}</span>`
+              : `<span class="assignee-empty">Unassigned</span>`
+          }
+        </td>
         <td><span class="mono">${escapeHtml(p.wo || "—")}</span></td>
         <td>${escapeHtml(p.nrc || "—")}</td>
         <td>${escapeHtml(p.mrc || "—")}</td>

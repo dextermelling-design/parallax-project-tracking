@@ -283,8 +283,46 @@ textarea {
 
 .job-name {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.45rem;
+}
+
+.job-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.assignee-line {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.assignee-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #bae6fd;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  white-space: nowrap;
+}
+
+.assignee-empty {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.assignee-col {
+  white-space: nowrap;
 }
 
 .chevron {
@@ -293,6 +331,7 @@ textarea {
   color: var(--accent);
   font-size: 0.65rem;
   flex-shrink: 0;
+  margin-top: 0.25rem;
 }
 
 .detail-row > td {
