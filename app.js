@@ -41,7 +41,7 @@
 
   /** @type {Array<Record<string, string>>} */
   let projects = load();
-  let sortKey = "user";
+  let sortKey = "project";
   let sortDir = 1;
   let editingId = null;
   /** @type {string | null} */
@@ -286,6 +286,12 @@
       tr.setAttribute("aria-expanded", isOpen ? "true" : "false");
       tr.title = "Click to expand details";
       tr.innerHTML = `
+        <td>
+          <span class="job-name">
+            <span class="chevron" aria-hidden="true">${isOpen ? "▼" : "▶"}</span>
+            <strong>${escapeHtml(p.project || "—")}</strong>
+          </span>
+        </td>
         <td class="assignee-col">
           ${
             p.user
@@ -297,12 +303,6 @@
           <span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span>
         </td>
         <td class="date-col">${formatDate(p.openDate)}</td>
-        <td>
-          <span class="job-name">
-            <span class="chevron" aria-hidden="true">${isOpen ? "▼" : "▶"}</span>
-            <strong>${escapeHtml(p.project || "—")}</strong>
-          </span>
-        </td>
       `;
       frag.appendChild(tr);
 
