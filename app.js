@@ -51,6 +51,7 @@
     stats: document.getElementById("stats"),
     search: document.getElementById("search"),
     filterStatus: document.getElementById("filter-status"),
+    filterUser: document.getElementById("filter-user"),
     modal: document.getElementById("modal"),
     form: document.getElementById("project-form"),
     modalTitle: document.getElementById("modal-title"),
@@ -113,6 +114,21 @@
     "Disregard",
   ];
 
+  const USERS = [
+    "Dexter",
+    "Ben",
+    "Jason",
+    "Cooper",
+    "Everyone",
+    "Mike",
+    "Ben/Dexter",
+    "Mike & Cooper",
+    "Dexter/Cooper",
+    "Kyler",
+    "Dexter/Kyler",
+    "Ben/Dexter/Kyler",
+  ];
+
   function statusClass(status) {
     return String(status || "not-yet-started")
       .toLowerCase()
@@ -122,11 +138,16 @@
   function getFiltered() {
     const q = els.search.value.trim().toLowerCase();
     const status = els.filterStatus.value;
+    const user = els.filterUser ? els.filterUser.value : "";
 
     let list = projects.slice();
 
     if (status) {
       list = list.filter((p) => p.status === status);
+    }
+
+    if (user) {
+      list = list.filter((p) => p.user === user);
     }
 
     if (q) {
@@ -267,6 +288,9 @@
     if (!data.status || !STATUSES.includes(data.status)) {
       data.status = "Not Yet Started";
     }
+    if (data.user && !USERS.includes(data.user)) {
+      data.user = "";
+    }
     return data;
   }
 
@@ -348,6 +372,7 @@
   els.btnExport.addEventListener("click", exportCsv);
   els.search.addEventListener("input", render);
   els.filterStatus.addEventListener("change", render);
+  if (els.filterUser) els.filterUser.addEventListener("change", render);
 
   els.modal.addEventListener("click", (e) => {
     if (e.target === els.modal) closeModal();

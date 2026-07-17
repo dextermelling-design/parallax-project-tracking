@@ -40,6 +40,21 @@
           <option>Complete</option>
           <option>Disregard</option>
         </select>
+        <select id="filter-user" aria-label="Filter by user">
+          <option value="">All users</option>
+          <option>Dexter</option>
+          <option>Ben</option>
+          <option>Jason</option>
+          <option>Cooper</option>
+          <option>Everyone</option>
+          <option>Mike</option>
+          <option>Ben/Dexter</option>
+          <option>Mike &amp; Cooper</option>
+          <option>Dexter/Cooper</option>
+          <option>Kyler</option>
+          <option>Dexter/Kyler</option>
+          <option>Ben/Dexter/Kyler</option>
+        </select>
         <button type="button" class="btn btn-ghost" id="btn-export" title="Export CSV">Export</button>
         <button type="button" class="btn btn-primary" id="btn-new">+ New project</button>
       </div>
@@ -155,7 +170,21 @@
           </label>
           <label>
             User
-            <input type="text" id="field-user" name="user" placeholder="Assigned user" />
+            <select id="field-user" name="user">
+              <option value="">— Select user —</option>
+              <option value="Dexter">Dexter</option>
+              <option value="Ben">Ben</option>
+              <option value="Jason">Jason</option>
+              <option value="Cooper">Cooper</option>
+              <option value="Everyone">Everyone</option>
+              <option value="Mike">Mike</option>
+              <option value="Ben/Dexter">Ben/Dexter</option>
+              <option value="Mike &amp; Cooper">Mike &amp; Cooper</option>
+              <option value="Dexter/Cooper">Dexter/Cooper</option>
+              <option value="Kyler">Kyler</option>
+              <option value="Dexter/Kyler">Dexter/Kyler</option>
+              <option value="Ben/Dexter/Kyler">Ben/Dexter/Kyler</option>
+            </select>
           </label>
           <label>
             WO

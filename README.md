@@ -13,7 +13,7 @@ Web app for tracking Parallax projects and work orders.
 | Update | Latest status update |
 | Scheduled | Scheduled date |
 | Status | Not Yet Started, Complete, On Hold, In Progress, Waiting on other, Scheduled, Port Submitted, Parts Ordered, Ready for Billing, Billing Complete, Disregard, Needs Quoted |
-| User | Assigned user |
+| User | Dexter, Ben, Jason, Cooper, Everyone, Mike, Ben/Dexter, Mike & Cooper, Dexter/Cooper, Kyler, Dexter/Kyler, Ben/Dexter/Kyler |
 | WO | Work order number |
 | NRC | Non-recurring charge |
 | MRC | Monthly recurring charge |
