@@ -241,22 +241,27 @@ textarea {
 
 .data-table th:nth-child(1),
 .data-table td:nth-child(1) {
-  width: 46%;
+  width: 38%;
 }
 
 .data-table th:nth-child(2),
 .data-table td:nth-child(2) {
-  width: 16%;
+  width: 14%;
 }
 
 .data-table th:nth-child(3),
 .data-table td:nth-child(3) {
-  width: 22%;
+  width: 18%;
 }
 
 .data-table th:nth-child(4),
 .data-table td:nth-child(4) {
-  width: 16%;
+  width: 15%;
+}
+
+.data-table th:nth-child(5),
+.data-table td:nth-child(5) {
+  width: 15%;
 }
 
 .date-col {
