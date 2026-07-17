@@ -235,7 +235,7 @@ textarea {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.92rem;
-  min-width: 0;
+  min-width: 680px;
   table-layout: fixed;
 }
 
@@ -832,7 +832,228 @@ textarea {
     grid-column: span 1;
   }
 
+  .topbar {
+    padding: 0.75rem 0.85rem;
+    gap: 0.65rem;
+  }
+
+  .topbar-actions {
+    width: 100%;
+  }
+
+  .topbar-actions input[type="search"],
+  .topbar-actions select {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+  }
+
   .topbar-actions input[type="search"] {
-    min-width: 100%;
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .topbar-actions .btn {
+    flex: 1 1 auto;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .main {
+    padding: 0.75rem;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .stat {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .stat .value {
+    font-size: 1.2rem;
+  }
+
+  /* Card-style job list — table columns no longer crush on phones */
+  .table-wrap {
+    overflow: visible;
+    max-height: none;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .data-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    table-layout: auto;
+    font-size: 0.9rem;
+  }
+
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .data-table tbody tr.job-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem 0.75rem;
+    padding: 0.85rem 0.9rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  }
+
+  .data-table tbody tr.job-row:hover {
+    background: var(--panel);
+  }
+
+  .data-table tbody tr.job-row.is-expanded {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: transparent;
+    background: rgba(56, 189, 248, 0.08);
+  }
+
+  .data-table tbody tr.job-row.is-priority {
+    background: linear-gradient(135deg, rgba(255, 61, 0, 0.22), rgba(255, 145, 0, 0.1));
+    box-shadow: inset 4px 0 0 #ff3d00, 0 8px 24px rgba(0, 0, 0, 0.28);
+  }
+
+  .data-table tbody tr.job-row.is-priority:hover,
+  .data-table tbody tr.job-row.is-priority.is-expanded {
+    background: linear-gradient(135deg, rgba(255, 61, 0, 0.28), rgba(255, 145, 0, 0.12));
+  }
+
+  .data-table tbody tr.job-row td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0;
+    border: none;
+    width: auto !important;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .data-table tbody tr.job-row td:first-child {
+    grid-column: 1 / -1;
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table tbody tr.job-row .chevron {
+    margin-top: 0.2rem;
+  }
+
+  .data-table tbody tr.job-row td::before {
+    content: attr(data-label);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  .data-table tbody tr.job-row td:first-child::before {
+    display: none;
+  }
+
+  .job-name {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .job-name strong {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    line-height: 1.3;
+    font-size: 1rem;
+    word-break: break-word;
+  }
+
+  .assignee-col,
+  .status-col,
+  .date-col {
+    white-space: normal;
+  }
+
+  .assignee-badge,
+  .badge {
+    white-space: normal;
+    text-align: left;
+    line-height: 1.25;
+    max-width: 100%;
+  }
+
+  .data-table tbody tr.detail-row {
+    display: block;
+    margin-top: -0.65rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .data-table tbody tr.detail-row > td {
+    display: block;
+    width: 100% !important;
+    padding: 0 !important;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    overflow: hidden;
+  }
+
+  .detail-panel {
+    padding: 0.9rem;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.55rem;
+  }
+
+  .detail-header h3 {
+    font-size: 1.05rem;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .priority-toggle {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .detail-actions {
+    justify-content: stretch;
+  }
+
+  .detail-actions .btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .modal-backdrop {
+    padding: 0.5rem;
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-height: min(92vh, 900px);
+    border-radius: 1rem 1rem 0.5rem 0.5rem;
   }
 }

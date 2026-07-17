@@ -321,19 +321,19 @@
       tr.setAttribute("aria-expanded", isOpen ? "true" : "false");
       tr.title = "Click to expand details";
       tr.innerHTML = `
-        <td>
+        <td data-label="Project">
           <span class="job-name">
             <span class="chevron" aria-hidden="true">${isOpen ? "▼" : "▶"}</span>
             ${priority ? `<span class="priority-flag" title="Priority">★</span>` : ""}
             <strong>${escapeHtml(p.project || "—")}</strong>
           </span>
         </td>
-        <td class="assignee-col">${assigneeBadgeHtml(p.user)}</td>
-        <td class="status-col">
+        <td class="assignee-col" data-label="Assigned">${assigneeBadgeHtml(p.user)}</td>
+        <td class="status-col" data-label="Status">
           <span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span>
         </td>
-        <td class="date-col">${formatDate(p.openDate)}</td>
-        <td class="date-col">${formatDate(p.scheduled)}</td>
+        <td class="date-col" data-label="Open Date">${formatDate(p.openDate)}</td>
+        <td class="date-col" data-label="Scheduled">${formatDate(p.scheduled)}</td>
       `;
       frag.appendChild(tr);
 
