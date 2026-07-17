@@ -78,6 +78,17 @@ textarea {
   box-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
 }
 
+.brand-logo {
+  height: 3rem;
+  width: auto;
+  max-width: 7.5rem;
+  object-fit: contain;
+  border-radius: 0.4rem;
+  background: #fff;
+  padding: 0.2rem 0.35rem;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
 .brand strong {
   display: block;
   font-size: 1.05rem;
@@ -90,6 +101,12 @@ textarea {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+@media (max-width: 720px) {
+  .brand-logo {
+    height: 2.5rem;
+  }
 }
 
 .topbar-actions {
