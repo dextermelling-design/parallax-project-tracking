@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Parallax Project Tracking — manage projects, work orders, and field updates." />
+  <title>Parallax Project Tracking</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <strong>Parallax</strong>
+          <span>Project Tracking</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <input type="search" id="search" placeholder="Search projects, address, WO…" aria-label="Search" />
+        <select id="filter-status" aria-label="Filter by status">
+          <option value="">All statuses</option>
+          <option>Open</option>
+          <option>Scheduled</option>
+          <option>In Progress</option>
+          <option>On Hold</option>
+          <option>Completed</option>
+          <option>Cancelled</option>
+        </select>
+        <button type="button" class="btn btn-ghost" id="btn-export" title="Export CSV">Export</button>
+        <button type="button" class="btn btn-primary" id="btn-new">+ New project</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="stats" id="stats"></div>
+
+      <div class="table-wrap">
+        <table class="data-table" id="projects-table">
+          <thead>
+            <tr>
+              <th data-sort="openDate">Open Date</th>
+              <th data-sort="completedDate">Completed Date</th>
+              <th data-sort="project">Project</th>
+              <th data-sort="address">Address</th>
+              <th data-sort="update">Update</th>
+              <th data-sort="scheduled">Scheduled</th>
+              <th data-sort="status">Status</th>
+              <th data-sort="user">User</th>
+              <th data-sort="wo">WO</th>
+              <th data-sort="nrc">NRC</th>
+              <th data-sort="mrc">MRC</th>
+              <th data-sort="contact">Contact</th>
+              <th data-sort="notes">Notes</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="projects-body"></tbody>
+        </table>
+        <p class="empty" id="empty-state" hidden>No projects yet. Click <strong>New project</strong> to add one.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <header class="modal-header">
+        <h2 id="modal-title">New project</h2>
+        <button type="button" class="icon-btn" id="btn-close" aria-label="Close">&times;</button>
+      </header>
+      <form id="project-form" class="modal-body">
+        <input type="hidden" id="field-id" name="id" />
+
+        <div class="form-grid">
+          <label>
+            Open Date
+            <input type="date" id="field-openDate" name="openDate" />
+          </label>
+          <label>
+            Completed Date
+            <input type="date" id="field-completedDate" name="completedDate" />
+          </label>
+          <label class="span-2">
+            Project
+            <input type="text" id="field-project" name="project" required placeholder="Project name" />
+          </label>
+          <label class="span-2">
+            Address
+            <input type="text" id="field-address" name="address" placeholder="Job site address" />
+          </label>
+          <label class="span-2">
+            Update
+            <input type="text" id="field-update" name="update" placeholder="Latest update" />
+          </label>
+          <label>
+            Scheduled
+            <input type="date" id="field-scheduled" name="scheduled" />
+          </label>
+          <label>
+            Status
+            <select id="field-status" name="status">
+              <option value="Open">Open</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="In Progress">In Progress</option>
+              <option value="On Hold">On Hold</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </label>
+          <label>
+            User
+            <input type="text" id="field-user" name="user" placeholder="Assigned user" />
+          </label>
+          <label>
+            WO
+            <input type="text" id="field-wo" name="wo" placeholder="Work order #" />
+          </label>
+          <label>
+            NRC
+            <input type="text" id="field-nrc" name="nrc" placeholder="Non-recurring charge" />
+          </label>
+          <label>
+            MRC
+            <input type="text" id="field-mrc" name="mrc" placeholder="Monthly recurring charge" />
+          </label>
+          <label class="span-2">
+            Contact
+            <input type="text" id="field-contact" name="contact" placeholder="Name, phone, or email" />
+          </label>
+          <label class="span-2">
+            Notes
+            <textarea id="field-notes" name="notes" rows="3" placeholder="Additional notes"></textarea>
+          </label>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="btn-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save project</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
