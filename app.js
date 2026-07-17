@@ -141,7 +141,7 @@
   }
 
   function isCompletedStatus(status) {
-    return status === "Complete";
+    return status === "Complete" || status === "Billing Complete";
   }
 
   function statusSelectHtml(projectId, current) {
