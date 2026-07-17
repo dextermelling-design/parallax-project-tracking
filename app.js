@@ -1,7 +1,8 @@
 (() => {
-  const STORAGE_KEY = "parallax-project-tracking-v1";
+  const STORAGE_KEY = "parallax-project-tracking-v3";
   const HIDE_COMPLETE_KEY = "parallax-hide-complete";
   const AUTH_SESSION_KEY = "parallax-delete-auth";
+  const SEED_FLAG_KEY = "parallax-seed-v3-loaded";
   // SHA-256 of default password "parallax" — change by generating a new hash
   const DELETE_PASSWORD_HASH =
     "25d3e422e9a0730c40e6cdf60a841702bcb76c76acf948dc5671a3b8742441fa";
@@ -73,15 +74,34 @@
     passwordCancel: document.getElementById("password-cancel"),
   };
 
+  function getSeedProjects() {
+    const seed = window.PARALLAX_SEED_PROJECTS;
+    if (!Array.isArray(seed) || seed.length === 0) return [];
+    // Clone so we never mutate the seed constants
+    return seed.map((p) => ({ ...p, id: p.id || uid() }));
+  }
+
   function load() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      const data = JSON.parse(raw);
-      return Array.isArray(data) ? data : [];
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
     } catch {
-      return [];
+      /* fall through to seed */
     }
+    const seed = getSeedProjects();
+    if (seed.length) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
+        localStorage.setItem(SEED_FLAG_KEY, "1");
+      } catch {
+        /* ignore quota errors */
+      }
+      return seed;
+    }
+    return [];
   }
 
   function save() {
@@ -608,27 +628,10 @@
     });
   });
 
-  // Seed one demo row only when empty (first visit)
+  // If storage empty but seed available, load seed (also covers first visit)
   if (projects.length === 0) {
-    projects = [
-      {
-        id: uid(),
-        openDate: today(),
-        completedDate: "",
-        project: "Sample install",
-        address: "123 Main St, Richmond, IN",
-        update: "Awaiting equipment",
-        scheduled: "",
-        status: "Not Yet Started",
-        user: "",
-        wo: "WO-1001",
-        nrc: "",
-        mrc: "",
-        contact: "",
-        notes: "Demo row — edit or delete me.",
-      },
-    ];
-    save();
+    projects = getSeedProjects();
+    if (projects.length) save();
   }
 
   render();
