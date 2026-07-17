@@ -1,5 +1,6 @@
 (() => {
   const STORAGE_KEY = "parallax-project-tracking-v1";
+  const HIDE_COMPLETE_KEY = "parallax-hide-complete";
   const AUTH_SESSION_KEY = "parallax-delete-auth";
   // SHA-256 of default password "parallax" — change by generating a new hash
   const DELETE_PASSWORD_HASH =
@@ -46,6 +47,7 @@
   let expandedId = null;
   /** @type {string | null} */
   let pendingDeleteId = null;
+  let hideCompleted = localStorage.getItem(HIDE_COMPLETE_KEY) === "1";
 
   const els = {
     body: document.getElementById("projects-body"),
@@ -61,6 +63,7 @@
     btnClose: document.getElementById("btn-close"),
     btnCancel: document.getElementById("btn-cancel"),
     btnExport: document.getElementById("btn-export"),
+    btnHideComplete: document.getElementById("btn-hide-complete"),
     passwordModal: document.getElementById("password-modal"),
     passwordForm: document.getElementById("password-form"),
     passwordInput: document.getElementById("delete-password"),
@@ -137,12 +140,49 @@
       .replace(/\s+/g, "-");
   }
 
+  function isCompletedStatus(status) {
+    return status === "Complete";
+  }
+
+  function statusSelectHtml(projectId, current) {
+    const value = current || "Not Yet Started";
+    const options = STATUSES.map(
+      (s) =>
+        `<option value="${escapeAttr(s)}"${s === value ? " selected" : ""}>${escapeHtml(s)}</option>`
+    ).join("");
+    return `<select class="status-select badge-select ${statusClass(value)}" data-status-change="${escapeAttr(projectId)}" aria-label="Change status">${options}</select>`;
+  }
+
+  function updateJobStatus(id, newStatus) {
+    if (!STATUSES.includes(newStatus)) return;
+    const idx = projects.findIndex((p) => p.id === id);
+    if (idx < 0) return;
+    const job = { ...projects[idx], status: newStatus };
+    if (newStatus === "Complete" && !job.completedDate) {
+      job.completedDate = today();
+    }
+    projects[idx] = job;
+    save();
+    render();
+  }
+
+  function syncHideCompleteButton() {
+    if (!els.btnHideComplete) return;
+    els.btnHideComplete.setAttribute("aria-pressed", hideCompleted ? "true" : "false");
+    els.btnHideComplete.classList.toggle("is-active", hideCompleted);
+    els.btnHideComplete.textContent = hideCompleted ? "Show completed" : "Hide completed";
+  }
+
   function getFiltered() {
     const q = els.search.value.trim().toLowerCase();
     const status = els.filterStatus.value;
     const user = els.filterUser ? els.filterUser.value : "";
 
     let list = projects.slice();
+
+    if (hideCompleted) {
+      list = list.filter((p) => !isCompletedStatus(p.status));
+    }
 
     if (status) {
       list = list.filter((p) => p.status === status);
@@ -259,11 +299,18 @@
             <div class="detail-panel">
               <div class="detail-header">
                 <h3>${escapeHtml(p.project || "Untitled project")}</h3>
-                <span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span>
+                ${statusSelectHtml(p.id, p.status)}
               </div>
               <div class="detail-grid">
-                ${FIELDS.map(
-                  (key) => `
+                ${FIELDS.map((key) => {
+                  if (key === "status") {
+                    return `
+                  <div class="detail-item">
+                    <span class="detail-label">${HEADERS[key]}</span>
+                    <div class="detail-value">${statusSelectHtml(p.id, p.status)}</div>
+                  </div>`;
+                  }
+                  return `
                   <div class="detail-item${key === "notes" || key === "update" || key === "address" ? " span-2" : ""}">
                     <span class="detail-label">${HEADERS[key]}</span>
                     <span class="detail-value${key === "notes" ? " detail-notes" : ""}">${
@@ -271,8 +318,8 @@
                         ? formatDate(p[key])
                         : escapeHtml(p[key] || "—")
                     }</span>
-                  </div>`
-                ).join("")}
+                  </div>`;
+                }).join("")}
               </div>
               <div class="detail-actions">
                 <button type="button" class="btn btn-ghost btn-sm" data-collapse="${p.id}">Collapse</button>
@@ -421,6 +468,33 @@
   els.search.addEventListener("input", render);
   els.filterStatus.addEventListener("change", render);
   if (els.filterUser) els.filterUser.addEventListener("change", render);
+
+  if (els.btnHideComplete) {
+    els.btnHideComplete.addEventListener("click", () => {
+      hideCompleted = !hideCompleted;
+      localStorage.setItem(HIDE_COMPLETE_KEY, hideCompleted ? "1" : "0");
+      syncHideCompleteButton();
+      render();
+    });
+    syncHideCompleteButton();
+  }
+
+  // Inline status change from expanded detail (stop row toggle)
+  els.body.addEventListener("change", (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLSelectElement)) return;
+    const id = t.getAttribute("data-status-change");
+    if (!id) return;
+    e.stopPropagation();
+    updateJobStatus(id, t.value);
+  });
+
+  els.body.addEventListener("click", (e) => {
+    const t = e.target;
+    if (t instanceof HTMLElement && t.closest("select[data-status-change]")) {
+      e.stopPropagation();
+    }
+  }, true);
 
   els.modal.addEventListener("click", (e) => {
     if (e.target === els.modal) closeModal();
