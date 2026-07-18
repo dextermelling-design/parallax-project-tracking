@@ -375,7 +375,7 @@
     }
 
     const frag = document.createDocumentFragment();
-    const colCount = 5;
+    const colCount = 4;
 
     for (const p of list) {
       const isOpen = expandedId === p.id;
@@ -399,7 +399,6 @@
         <td class="status-col" data-label="Status">
           <span class="badge ${statusClass(p.status)}">${escapeHtml(p.status || "Not Yet Started")}</span>
         </td>
-        <td class="date-col" data-label="Open Date">${formatDate(p.openDate)}</td>
         <td class="date-col" data-label="Scheduled">${formatDate(p.scheduled)}</td>
       `;
       frag.appendChild(tr);
