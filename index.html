@@ -199,9 +199,20 @@
             MRC
             <input type="text" id="field-mrc" name="mrc" placeholder="Monthly recurring charge" />
           </label>
-          <label class="span-2">
-            Contact
-            <input type="text" id="field-contact" name="contact" placeholder="Name, phone, or email" />
+          <label>
+            Contact name
+            <input type="text" id="field-contact" name="contact" placeholder="Contact name" />
+          </label>
+          <label>
+            Contact phone
+            <input
+              type="tel"
+              id="field-contactPhone"
+              name="contactPhone"
+              placeholder="Phone number"
+              inputmode="tel"
+              autocomplete="tel"
+            />
           </label>
           <label class="span-2">
             Quote Google Sheet

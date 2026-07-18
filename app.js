@@ -20,6 +20,7 @@
     "nrc",
     "mrc",
     "contact",
+    "contactPhone",
     "quoteSheet",
     "notes",
   ];
@@ -36,7 +37,8 @@
     wo: "WO",
     nrc: "NRC",
     mrc: "MRC",
-    contact: "Contact",
+    contact: "Contact name",
+    contactPhone: "Contact phone",
     quoteSheet: "Quote sheet",
     notes: "Notes",
   };
@@ -425,6 +427,17 @@
                   <div class="detail-item">
                     <span class="detail-label">${HEADERS[key]}</span>
                     <div class="detail-value">${statusSelectHtml(p.id, p.status)}</div>
+                  </div>`;
+                  }
+                  if (key === "contactPhone") {
+                    const phone = String(p.contactPhone || "").trim();
+                    const phoneHtml = phone
+                      ? `<a class="contact-phone-link" href="tel:${escapeAttr(phone.replace(/[^\d+]/g, ""))}" data-stop-expand>${escapeHtml(phone)}</a>`
+                      : "—";
+                    return `
+                  <div class="detail-item">
+                    <span class="detail-label">${HEADERS[key]}</span>
+                    <span class="detail-value">${phoneHtml}</span>
                   </div>`;
                   }
                   return `
