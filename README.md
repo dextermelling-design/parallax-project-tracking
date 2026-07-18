@@ -18,6 +18,7 @@ Web app for tracking Parallax projects and work orders.
 | NRC | Non-recurring charge |
 | MRC | Monthly recurring charge |
 | Contact | Customer / site contact |
+| Quote sheet | Google Sheet URL for the quote (also editable when a job is expanded) |
 | Notes | Free-form notes |
 
 ## Local

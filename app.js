@@ -20,6 +20,7 @@
     "nrc",
     "mrc",
     "contact",
+    "quoteSheet",
     "notes",
   ];
 
@@ -36,6 +37,7 @@
     nrc: "NRC",
     mrc: "MRC",
     contact: "Contact",
+    quoteSheet: "Quote sheet",
     notes: "Notes",
   };
 
@@ -263,6 +265,69 @@
     render();
   }
 
+  /** Normalize pasted URLs; return "" if empty/invalid. */
+  function normalizeUrl(raw) {
+    const s = String(raw || "").trim();
+    if (!s) return "";
+    let url = s;
+    if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+    try {
+      const u = new URL(url);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return "";
+      return u.href;
+    } catch {
+      return "";
+    }
+  }
+
+  function setJobQuoteSheet(id, rawUrl) {
+    const idx = projects.findIndex((p) => p.id === id);
+    if (idx < 0) return false;
+    const url = normalizeUrl(rawUrl);
+    if (rawUrl && String(rawUrl).trim() && !url) return false;
+    projects[idx] = { ...projects[idx], quoteSheet: url };
+    save();
+    render();
+    return true;
+  }
+
+  function quoteSheetBlockHtml(p) {
+    const url = normalizeUrl(p.quoteSheet);
+    const safeId = escapeAttr(p.id);
+    const openBtn = url
+      ? `<a class="btn btn-primary btn-sm quote-open-btn" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer" data-stop-expand>Open quote sheet</a>`
+      : "";
+    return `
+      <div class="quote-sheet-block" data-stop-expand>
+        <div class="quote-sheet-header">
+          <span class="detail-label">Quote Google Sheet</span>
+          ${openBtn}
+        </div>
+        <div class="quote-sheet-row">
+          <input
+            type="url"
+            class="quote-sheet-input"
+            data-quote-input="${safeId}"
+            value="${escapeAttr(p.quoteSheet || "")}"
+            placeholder="Paste Google Sheet link for this quote…"
+            inputmode="url"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="button" class="btn btn-ghost btn-sm" data-quote-save="${safeId}">Save link</button>
+          ${
+            url
+              ? `<button type="button" class="btn btn-ghost btn-sm" data-quote-clear="${safeId}" title="Remove link">Clear</button>`
+              : ""
+          }
+        </div>
+        <p class="quote-sheet-hint${url ? " is-linked" : ""}" data-quote-msg="${safeId}">
+          ${url ? "Link saved — opens in a new tab." : "Optional. Paste the share link so the team can open the quote sheet from this job."}
+        </p>
+      </div>
+    `;
+  }
+
   function renderStats(list) {
     const all = projects;
     const active = all.filter(
@@ -351,8 +416,10 @@
                   <span>Priority — keep at top</span>
                 </label>
               </div>
+              ${quoteSheetBlockHtml(p)}
               <div class="detail-grid">
                 ${FIELDS.map((key) => {
+                  if (key === "quoteSheet") return "";
                   if (key === "status") {
                     return `
                   <div class="detail-item">
@@ -441,6 +508,7 @@
     }
     const priorityEl = document.getElementById("field-priority");
     data.priority = !!(priorityEl && priorityEl.checked);
+    data.quoteSheet = normalizeUrl(data.quoteSheet);
     return data;
   }
 
@@ -552,6 +620,21 @@
     }
   });
 
+  function applyQuoteSheetFromUi(id) {
+    const input = els.body.querySelector(`input[data-quote-input="${CSS.escape(id)}"]`);
+    const msg = els.body.querySelector(`[data-quote-msg="${CSS.escape(id)}"]`);
+    if (!input) return;
+    const raw = input.value;
+    const ok = setJobQuoteSheet(id, raw);
+    if (!ok && msg) {
+      msg.textContent = "That doesn’t look like a valid link. Paste a full https://… URL.";
+      msg.classList.remove("is-linked");
+      msg.classList.add("is-error");
+      input.focus();
+      input.select();
+    }
+  }
+
   els.body.addEventListener("click", (e) => {
     const t = e.target;
     if (!(t instanceof HTMLElement)) return;
@@ -559,11 +642,40 @@
       t.closest("select[data-status-change]") ||
       t.closest("[data-priority-change]") ||
       t.closest(".priority-toggle") ||
-      t.closest("[data-stop-expand]")
+      t.closest("[data-stop-expand]") ||
+      t.closest(".quote-sheet-block") ||
+      t.closest("a.quote-open-btn")
     ) {
       e.stopPropagation();
     }
+
+    const saveId =
+      t.getAttribute("data-quote-save") ||
+      t.closest("[data-quote-save]")?.getAttribute("data-quote-save");
+    if (saveId) {
+      e.stopPropagation();
+      applyQuoteSheetFromUi(saveId);
+      return;
+    }
+
+    const clearId =
+      t.getAttribute("data-quote-clear") ||
+      t.closest("[data-quote-clear]")?.getAttribute("data-quote-clear");
+    if (clearId) {
+      e.stopPropagation();
+      setJobQuoteSheet(clearId, "");
+    }
   }, true);
+
+  els.body.addEventListener("keydown", (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLInputElement) || !t.hasAttribute("data-quote-input")) return;
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = t.getAttribute("data-quote-input");
+    if (id) applyQuoteSheetFromUi(id);
+  });
 
   els.modal.addEventListener("click", (e) => {
     if (e.target === els.modal) closeModal();
