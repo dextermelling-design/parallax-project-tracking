@@ -60,7 +60,11 @@
     stats: document.getElementById("stats"),
     search: document.getElementById("search"),
     filterStatus: document.getElementById("filter-status"),
-    filterUser: document.getElementById("filter-user"),
+    filterUserWrap: document.getElementById("filter-user-wrap"),
+    filterUserBtn: document.getElementById("filter-user-btn"),
+    filterUserPanel: document.getElementById("filter-user-panel"),
+    filterUserOptions: document.getElementById("filter-user-options"),
+    filterUserClear: document.getElementById("filter-user-clear"),
     modal: document.getElementById("modal"),
     form: document.getElementById("project-form"),
     modalTitle: document.getElementById("modal-title"),
@@ -214,10 +218,143 @@
     els.btnHideComplete.textContent = hideCompleted ? "Show completed" : "Hide completed";
   }
 
+  /** @type {Set<string>} */
+  let selectedUsers = new Set();
+
+  function getSelectedUsers() {
+    return selectedUsers;
+  }
+
+  function updateUserFilterLabel() {
+    if (!els.filterUserBtn) return;
+    const selected = [...selectedUsers];
+    if (selected.length === 0) {
+      els.filterUserBtn.textContent = "All users";
+      els.filterUserBtn.classList.remove("has-selection");
+      return;
+    }
+    els.filterUserBtn.classList.add("has-selection");
+    if (selected.length === 1) {
+      els.filterUserBtn.textContent = selected[0];
+      return;
+    }
+    if (selected.length === 2) {
+      els.filterUserBtn.textContent = `${selected[0]}, ${selected[1]}`;
+      return;
+    }
+    els.filterUserBtn.textContent = `${selected.length} users`;
+  }
+
+  function initUserFilter() {
+    if (!els.filterUserOptions) return;
+
+    els.filterUserOptions.innerHTML = USERS.map((user) => {
+      const id = `filter-user-${userClass(user)}`;
+      return `<label class="multi-select-option" role="option" aria-selected="false">
+        <input type="checkbox" value="${escapeAttr(user)}" id="${escapeAttr(id)}" />
+        <span class="assignee-badge ${userClass(user)}">${escapeHtml(user)}</span>
+      </label>`;
+    }).join("");
+
+    els.filterUserOptions.addEventListener("change", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== "checkbox") return;
+      if (t.checked) selectedUsers.add(t.value);
+      else selectedUsers.delete(t.value);
+      const label = t.closest(".multi-select-option");
+      if (label) label.setAttribute("aria-selected", t.checked ? "true" : "false");
+      updateUserFilterLabel();
+      render();
+    });
+
+    if (els.filterUserBtn && els.filterUserPanel) {
+      els.filterUserBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const open = els.filterUserPanel.hasAttribute("hidden");
+        setUserFilterOpen(open);
+      });
+    }
+
+    if (els.filterUserClear) {
+      els.filterUserClear.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selectedUsers.clear();
+        els.filterUserOptions.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+          cb.checked = false;
+          const label = cb.closest(".multi-select-option");
+          if (label) label.setAttribute("aria-selected", "false");
+        });
+        updateUserFilterLabel();
+        render();
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!els.filterUserWrap || !els.filterUserPanel) return;
+      if (els.filterUserPanel.hasAttribute("hidden")) return;
+      if (e.target instanceof Node && els.filterUserWrap.contains(e.target)) return;
+      setUserFilterOpen(false);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && els.filterUserPanel && !els.filterUserPanel.hasAttribute("hidden")) {
+        setUserFilterOpen(false);
+        els.filterUserBtn?.focus();
+      }
+    });
+
+    updateUserFilterLabel();
+  }
+
+  function setUserFilterOpen(open) {
+    if (!els.filterUserPanel || !els.filterUserBtn) return;
+    if (open) {
+      els.filterUserPanel.removeAttribute("hidden");
+      els.filterUserBtn.setAttribute("aria-expanded", "true");
+      els.filterUserWrap?.classList.add("is-open");
+    } else {
+      els.filterUserPanel.setAttribute("hidden", "");
+      els.filterUserBtn.setAttribute("aria-expanded", "false");
+      els.filterUserWrap?.classList.remove("is-open");
+    }
+  }
+
+  /** Split assignee labels like "Ben/Dexter" or "Mike & Cooper" into individual names. */
+  function assigneeTokens(user) {
+    if (!user) return [];
+    return String(user)
+      .split(/[/&]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  /**
+   * Match a project's assignee against the multi-select filter.
+   * - Exact label match always counts (including combo options like "Ben/Dexter").
+   * - Selecting a single person (e.g. "Dexter") also matches combo labels that include them.
+   */
+  function projectMatchesUserFilter(projectUser, selected) {
+    if (selected.size === 0) return true;
+    const assigned = projectUser || "";
+    if (selected.has(assigned)) return true;
+
+    const projectPeople = assigneeTokens(assigned);
+    if (projectPeople.length === 0) return false;
+
+    for (const sel of selected) {
+      const people = assigneeTokens(sel);
+      // Single-person selection → include any assignment that names them
+      if (people.length === 1 && projectPeople.includes(people[0])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   function getFiltered() {
     const q = els.search.value.trim().toLowerCase();
     const status = els.filterStatus.value;
-    const user = els.filterUser ? els.filterUser.value : "";
+    const users = getSelectedUsers();
 
     let list = projects.slice();
 
@@ -229,8 +366,8 @@
       list = list.filter((p) => p.status === status);
     }
 
-    if (user) {
-      list = list.filter((p) => p.user === user);
+    if (users.size > 0) {
+      list = list.filter((p) => projectMatchesUserFilter(p.user, users));
     }
 
     if (q) {
@@ -602,7 +739,7 @@
   els.btnExport.addEventListener("click", exportCsv);
   els.search.addEventListener("input", render);
   els.filterStatus.addEventListener("change", render);
-  if (els.filterUser) els.filterUser.addEventListener("change", render);
+  initUserFilter();
 
   if (els.btnHideComplete) {
     els.btnHideComplete.addEventListener("click", () => {

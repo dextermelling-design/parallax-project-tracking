@@ -40,21 +40,25 @@
           <option>Complete</option>
           <option>Disregard</option>
         </select>
-        <select id="filter-user" aria-label="Filter by user">
-          <option value="">All users</option>
-          <option>Dexter</option>
-          <option>Ben</option>
-          <option>Jason</option>
-          <option>Cooper</option>
-          <option>Everyone</option>
-          <option>Mike</option>
-          <option>Ben/Dexter</option>
-          <option>Mike &amp; Cooper</option>
-          <option>Dexter/Cooper</option>
-          <option>Kyler</option>
-          <option>Dexter/Kyler</option>
-          <option>Ben/Dexter/Kyler</option>
-        </select>
+        <div class="multi-select" id="filter-user-wrap">
+          <button
+            type="button"
+            class="multi-select-trigger"
+            id="filter-user-btn"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="filter-user-panel"
+            aria-label="Filter by user"
+          >
+            All users
+          </button>
+          <div class="multi-select-panel" id="filter-user-panel" role="listbox" aria-multiselectable="true" hidden>
+            <div class="multi-select-options" id="filter-user-options"></div>
+            <div class="multi-select-footer">
+              <button type="button" class="btn btn-ghost multi-select-clear" id="filter-user-clear">Clear</button>
+            </div>
+          </div>
+        </div>
         <button type="button" class="btn btn-ghost" id="btn-hide-complete" aria-pressed="false" title="Hide jobs with status Complete or Billing Complete">
           Hide completed
         </button>
