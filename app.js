@@ -147,6 +147,7 @@
     "Disregard",
   ];
 
+  /** Full assignee options used when creating/editing a project. */
   const USERS = [
     "Dexter",
     "Ben",
@@ -161,6 +162,12 @@
     "Dexter/Kyler",
     "Ben/Dexter/Kyler",
   ];
+
+  /** Individual people shown in the filter (not combo labels). */
+  const FILTER_PEOPLE = ["Dexter", "Ben", "Jason", "Cooper", "Everyone", "Mike", "Kyler"];
+
+  /** Shared/combo assignee labels that can be opted into after selecting people. */
+  const COMBO_LABELS = USERS.filter((u) => /[/&]/.test(u));
 
   function statusClass(status) {
     return String(status || "not-yet-started")
@@ -218,53 +225,125 @@
     els.btnHideComplete.textContent = hideCompleted ? "Show completed" : "Hide completed";
   }
 
-  /** @type {Set<string>} */
-  let selectedUsers = new Set();
-
-  function getSelectedUsers() {
-    return selectedUsers;
+  /** Split assignee labels like "Ben/Dexter" or "Mike & Cooper" into individual names. */
+  function assigneeTokens(user) {
+    if (!user) return [];
+    return String(user)
+      .split(/[/&]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
+
+  /** @type {Set<string>} selected individual people */
+  let selectedPeople = new Set();
+  /** @type {Set<string>} selected combo labels to include */
+  let selectedCombos = new Set();
 
   function updateUserFilterLabel() {
     if (!els.filterUserBtn) return;
-    const selected = [...selectedUsers];
-    if (selected.length === 0) {
+    const people = [...selectedPeople];
+    const combos = [...selectedCombos];
+    const total = people.length + combos.length;
+    if (total === 0) {
       els.filterUserBtn.textContent = "All users";
       els.filterUserBtn.classList.remove("has-selection");
       return;
     }
     els.filterUserBtn.classList.add("has-selection");
-    if (selected.length === 1) {
-      els.filterUserBtn.textContent = selected[0];
+    if (people.length === 1 && combos.length === 0) {
+      els.filterUserBtn.textContent = people[0];
       return;
     }
-    if (selected.length === 2) {
-      els.filterUserBtn.textContent = `${selected[0]}, ${selected[1]}`;
+    if (people.length === 1 && combos.length === 1) {
+      els.filterUserBtn.textContent = `${people[0]} +1 shared`;
       return;
     }
-    els.filterUserBtn.textContent = `${selected.length} users`;
+    if (people.length === 1 && combos.length > 1) {
+      els.filterUserBtn.textContent = `${people[0]} +${combos.length} shared`;
+      return;
+    }
+    if (combos.length === 0 && people.length === 2) {
+      els.filterUserBtn.textContent = `${people[0]}, ${people[1]}`;
+      return;
+    }
+    els.filterUserBtn.textContent = `${total} selected`;
+  }
+
+  function optionLabelHtml(value, kind) {
+    const id = `filter-${kind}-${userClass(value)}`;
+    const checked =
+      kind === "person" ? selectedPeople.has(value) : selectedCombos.has(value);
+    return `<label class="multi-select-option" role="option" aria-selected="${checked ? "true" : "false"}">
+      <input type="checkbox" data-filter-kind="${escapeAttr(kind)}" value="${escapeAttr(value)}" id="${escapeAttr(id)}"${checked ? " checked" : ""} />
+      <span class="assignee-badge ${userClass(value)}">${escapeHtml(value)}</span>
+    </label>`;
+  }
+
+  /** Combos related to currently selected people (or all combos if none selected). */
+  function relevantCombos() {
+    if (selectedPeople.size === 0) return COMBO_LABELS.slice();
+    return COMBO_LABELS.filter((combo) =>
+      assigneeTokens(combo).some((name) => selectedPeople.has(name))
+    );
+  }
+
+  function renderUserFilterOptions() {
+    if (!els.filterUserOptions) return;
+
+    const peopleHtml = FILTER_PEOPLE.map((p) => optionLabelHtml(p, "person")).join("");
+    const combos = relevantCombos();
+    // Drop combo selections that no longer apply to selected people
+    const allowed = new Set(combos);
+    for (const c of [...selectedCombos]) {
+      if (!allowed.has(c)) selectedCombos.delete(c);
+    }
+
+    let combosHtml = "";
+    if (selectedPeople.size > 0 && combos.length > 0) {
+      combosHtml = `
+        <div class="multi-select-section-label">Also include shared</div>
+        ${combos.map((c) => optionLabelHtml(c, "combo")).join("")}
+      `;
+    } else if (selectedPeople.size === 0) {
+      combosHtml = `
+        <div class="multi-select-section-label">Shared assignments</div>
+        <p class="multi-select-hint">Select a person above, then check shared labels to include them.</p>
+      `;
+    }
+
+    els.filterUserOptions.innerHTML = `
+      <div class="multi-select-section-label">People</div>
+      ${peopleHtml}
+      ${combosHtml}
+    `;
+    updateUserFilterLabel();
   }
 
   function initUserFilter() {
     if (!els.filterUserOptions) return;
 
-    els.filterUserOptions.innerHTML = USERS.map((user) => {
-      const id = `filter-user-${userClass(user)}`;
-      return `<label class="multi-select-option" role="option" aria-selected="false">
-        <input type="checkbox" value="${escapeAttr(user)}" id="${escapeAttr(id)}" />
-        <span class="assignee-badge ${userClass(user)}">${escapeHtml(user)}</span>
-      </label>`;
-    }).join("");
+    renderUserFilterOptions();
 
     els.filterUserOptions.addEventListener("change", (e) => {
       const t = e.target;
       if (!(t instanceof HTMLInputElement) || t.type !== "checkbox") return;
-      if (t.checked) selectedUsers.add(t.value);
-      else selectedUsers.delete(t.value);
-      const label = t.closest(".multi-select-option");
-      if (label) label.setAttribute("aria-selected", t.checked ? "true" : "false");
-      updateUserFilterLabel();
-      render();
+      const kind = t.getAttribute("data-filter-kind");
+      const value = t.value;
+      if (kind === "person") {
+        if (t.checked) selectedPeople.add(value);
+        else selectedPeople.delete(value);
+        renderUserFilterOptions();
+        render();
+        return;
+      }
+      if (kind === "combo") {
+        if (t.checked) selectedCombos.add(value);
+        else selectedCombos.delete(value);
+        const label = t.closest(".multi-select-option");
+        if (label) label.setAttribute("aria-selected", t.checked ? "true" : "false");
+        updateUserFilterLabel();
+        render();
+      }
     });
 
     if (els.filterUserBtn && els.filterUserPanel) {
@@ -278,13 +357,9 @@
     if (els.filterUserClear) {
       els.filterUserClear.addEventListener("click", (e) => {
         e.stopPropagation();
-        selectedUsers.clear();
-        els.filterUserOptions.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-          cb.checked = false;
-          const label = cb.closest(".multi-select-option");
-          if (label) label.setAttribute("aria-selected", "false");
-        });
-        updateUserFilterLabel();
+        selectedPeople.clear();
+        selectedCombos.clear();
+        renderUserFilterOptions();
         render();
       });
     }
@@ -302,8 +377,6 @@
         els.filterUserBtn?.focus();
       }
     });
-
-    updateUserFilterLabel();
   }
 
   function setUserFilterOpen(open) {
@@ -319,42 +392,23 @@
     }
   }
 
-  /** Split assignee labels like "Ben/Dexter" or "Mike & Cooper" into individual names. */
-  function assigneeTokens(user) {
-    if (!user) return [];
-    return String(user)
-      .split(/[/&]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }
-
   /**
-   * Match a project's assignee against the multi-select filter.
-   * - Exact label match always counts (including combo options like "Ben/Dexter").
-   * - Selecting a single person (e.g. "Dexter") also matches combo labels that include them.
+   * - No selection → show all.
+   * - Selected people → show projects assigned exactly to those people.
+   * - Selected combo boxes → also show those shared labels.
+   * - Combo-only selection is not used; pick a person first.
    */
-  function projectMatchesUserFilter(projectUser, selected) {
-    if (selected.size === 0) return true;
+  function projectMatchesUserFilter(projectUser) {
+    if (selectedPeople.size === 0 && selectedCombos.size === 0) return true;
     const assigned = projectUser || "";
-    if (selected.has(assigned)) return true;
-
-    const projectPeople = assigneeTokens(assigned);
-    if (projectPeople.length === 0) return false;
-
-    for (const sel of selected) {
-      const people = assigneeTokens(sel);
-      // Single-person selection → include any assignment that names them
-      if (people.length === 1 && projectPeople.includes(people[0])) {
-        return true;
-      }
-    }
+    if (selectedPeople.has(assigned)) return true;
+    if (selectedCombos.has(assigned)) return true;
     return false;
   }
 
   function getFiltered() {
     const q = els.search.value.trim().toLowerCase();
     const status = els.filterStatus.value;
-    const users = getSelectedUsers();
 
     let list = projects.slice();
 
@@ -366,8 +420,8 @@
       list = list.filter((p) => p.status === status);
     }
 
-    if (users.size > 0) {
-      list = list.filter((p) => projectMatchesUserFilter(p.user, users));
+    if (selectedPeople.size > 0 || selectedCombos.size > 0) {
+      list = list.filter((p) => projectMatchesUserFilter(p.user));
     }
 
     if (q) {
