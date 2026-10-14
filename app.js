@@ -114,6 +114,7 @@
 
   function save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+    document.dispatchEvent(new CustomEvent("parallax:projects-changed"));
   }
 
   function uid() {
@@ -643,6 +644,7 @@
               </div>
               <div class="detail-actions">
                 <button type="button" class="btn btn-ghost btn-sm" data-collapse="${p.id}">Collapse</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-agreement="${escapeAttr(p.id)}">Create agreement</button>
                 <button type="button" class="btn btn-primary btn-sm" data-edit="${p.id}">Edit project</button>
                 <button type="button" class="btn btn-danger btn-sm" data-delete="${p.id}">Delete</button>
               </div>
@@ -938,6 +940,19 @@
     const t = e.target;
     if (!(t instanceof HTMLElement)) return;
 
+    const agreementId =
+      t.getAttribute("data-agreement") || t.closest("[data-agreement]")?.getAttribute("data-agreement");
+    if (agreementId && (t.matches("[data-agreement]") || t.closest("[data-agreement]"))) {
+      e.stopPropagation();
+      const project = projects.find((p) => p.id === agreementId);
+      if (project) {
+        document.dispatchEvent(
+          new CustomEvent("parallax:create-agreement", { detail: { project: { ...project } } })
+        );
+      }
+      return;
+    }
+
     const editId = t.getAttribute("data-edit") || t.closest("[data-edit]")?.getAttribute("data-edit");
     if (editId && (t.matches("[data-edit]") || t.closest("[data-edit]"))) {
       e.stopPropagation();
@@ -1006,4 +1021,10 @@
   }
 
   render();
+
+  window.ParallaxTracking = {
+    getProjects() {
+      return projects.map((p) => ({ ...p }));
+    },
+  };
 })();
