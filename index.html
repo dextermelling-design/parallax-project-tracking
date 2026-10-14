@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app">
+  <div class="app" data-section="projects">
     <header class="topbar">
       <div class="brand">
         <img
@@ -20,10 +20,14 @@
         />
         <div>
           <strong>Parallax Systems</strong>
-          <span>Project Tracking</span>
+          <span id="brand-kicker">Project Tracking</span>
         </div>
       </div>
-      <div class="topbar-actions">
+      <nav class="section-nav" role="tablist" aria-label="Sections">
+        <button type="button" class="section-tab is-active" id="tab-projects" role="tab" aria-selected="true" aria-controls="view-projects">Projects</button>
+        <button type="button" class="section-tab" id="tab-agreements" role="tab" aria-selected="false" aria-controls="view-agreements">Fiber Agreements</button>
+      </nav>
+      <div class="topbar-actions" id="project-toolbar">
         <input type="search" id="search" placeholder="Search projects, address, WO…" aria-label="Search" />
         <select id="filter-status" aria-label="Filter by status">
           <option value="">All statuses</option>
@@ -68,6 +72,7 @@
     </header>
 
     <main class="main">
+      <div id="view-projects" role="tabpanel" aria-labelledby="tab-projects">
       <div class="stats" id="stats"></div>
 
       <div class="table-wrap">
@@ -83,6 +88,229 @@
           <tbody id="projects-body"></tbody>
         </table>
         <p class="empty" id="empty-state" hidden>No projects yet. Click <strong>New project</strong> to add one.</p>
+      </div>
+      </div>
+
+      <div id="view-agreements" role="tabpanel" aria-labelledby="tab-agreements" hidden>
+        <div class="view-head">
+          <div>
+            <h1>Fiber Agreements</h1>
+            <p>Telecommunications service agreement and fiber service order. Customer, speed, and charges fill the contract. The PDF ends with a service order.</p>
+          </div>
+          <div class="view-head-actions">
+            <button type="button" class="btn btn-ghost" id="fa-new">New</button>
+            <button type="button" class="btn btn-ghost" id="fa-library">Saved</button>
+            <button type="button" class="btn btn-ghost" id="fa-save" title="Save in this browser (Ctrl+S)">Save</button>
+            <button type="button" class="btn btn-ghost" id="fa-save-as">Save as new</button>
+            <button type="button" class="btn btn-ghost" id="fa-preview">Preview</button>
+            <button type="button" class="btn btn-primary" id="fa-pdf">Download PDF</button>
+          </div>
+        </div>
+        <p class="fa-banner" id="fa-banner" hidden></p>
+
+        <div class="fa-layout">
+          <div>
+            <section class="fa-card">
+              <h2>Document</h2>
+              <div class="doc-kind" role="radiogroup" aria-label="Document type">
+                <label class="check-line">
+                  <input type="radio" name="fa-doc-kind" id="fa-doc-full" value="full" checked />
+                  Full agreement and service order
+                </label>
+                <label class="check-line">
+                  <input type="radio" name="fa-doc-kind" id="fa-doc-order" value="order" />
+                  Service order only
+                </label>
+              </div>
+              <label class="fa-job-label">
+                Start from a job
+                <select id="fa-job">
+                  <option value="">Manual entry</option>
+                </select>
+              </label>
+              <p class="fa-note" id="fa-source" hidden></p>
+              <p class="fa-quote-row">
+                <a class="fa-quote-link" id="fa-quote-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Open quote sheet</a>
+                <button type="button" class="btn btn-ghost btn-sm" id="fa-refresh-job" hidden>Refresh from job</button>
+              </p>
+              <div class="form-grid cols-3">
+                <label>
+                  Agreement date
+                  <input type="date" id="fa-date" />
+                </label>
+                <label>
+                  Agreement #
+                  <input type="text" id="fa-number" placeholder="Optional — work order fills this" />
+                </label>
+                <label>
+                  Requested installation
+                  <input type="date" id="fa-install" />
+                </label>
+                <label>
+                  Prepared by
+                  <input type="text" id="fa-prepared" placeholder="Your name" autocomplete="name" />
+                </label>
+                <label class="span-2">
+                  Parallax signer title
+                  <input type="text" id="fa-signer-title" placeholder="Prints on the signature line" />
+                </label>
+              </div>
+            </section>
+
+            <section class="fa-card">
+              <h2>Customer</h2>
+              <div class="form-grid">
+                <label class="span-2">
+                  Business / customer name
+                  <input type="text" id="fa-customer" placeholder="Customer or business name" autocomplete="organization" />
+                </label>
+                <label class="span-2">
+                  Service address
+                  <input type="text" id="fa-street" placeholder="Street" autocomplete="street-address" />
+                </label>
+                <label>
+                  City
+                  <input type="text" id="fa-city" placeholder="City" autocomplete="address-level2" />
+                </label>
+                <label>
+                  State
+                  <input type="text" id="fa-state" value="IN" maxlength="2" autocomplete="address-level1" />
+                </label>
+                <label>
+                  ZIP
+                  <input type="text" id="fa-zip" placeholder="ZIP" autocomplete="postal-code" />
+                </label>
+                <label>
+                  Contact person
+                  <input type="text" id="fa-contact" autocomplete="name" />
+                </label>
+                <label>
+                  Title
+                  <input type="text" id="fa-title" placeholder="Owner" />
+                </label>
+                <label>
+                  Email
+                  <input type="email" id="fa-email" autocomplete="email" />
+                </label>
+                <label>
+                  Phone
+                  <input type="tel" id="fa-phone" autocomplete="tel" />
+                </label>
+                <label class="span-2">
+                  Federal Tax ID # or SS#
+                  <input type="text" id="fa-tax" placeholder="Optional — leave blank to collect at signing" />
+                </label>
+              </div>
+              <label class="check-line">
+                <input type="checkbox" id="fa-notice-same" checked />
+                Notices go to the service address
+              </label>
+              <div class="form-grid" id="fa-notice-fields" hidden>
+                <label class="span-2">
+                  Notice street
+                  <input type="text" id="fa-notice-street" />
+                </label>
+                <label>
+                  Notice city
+                  <input type="text" id="fa-notice-city" />
+                </label>
+                <label>
+                  Notice state
+                  <input type="text" id="fa-notice-state" value="IN" maxlength="2" />
+                </label>
+                <label>
+                  Notice ZIP
+                  <input type="text" id="fa-notice-zip" />
+                </label>
+              </div>
+              <p class="fa-preamble" id="fa-preamble"></p>
+            </section>
+
+            <section class="fa-card">
+              <h2>Fiber service</h2>
+              <p class="hint">Pick a fiber level. Speed and monthly price pre-fill the service order. Use Custom for any other speed or price.</p>
+              <div class="level-grid" id="fa-level-grid" role="radiogroup" aria-label="Fiber level"></div>
+              <div class="form-grid" id="fa-custom-fields" hidden>
+                <label>
+                  Custom speed
+                  <input type="text" id="fa-custom-speed" placeholder="e.g. 100 Mbps" />
+                </label>
+                <label>
+                  Custom monthly charge ($)
+                  <input type="number" id="fa-custom-mrc" min="0" step="0.01" value="0" />
+                </label>
+              </div>
+              <div class="form-grid">
+                <label>
+                  Term (months)
+                  <input type="number" id="fa-term" min="1" max="120" step="1" value="36" />
+                </label>
+                <label>
+                  Installation / non-recurring charge ($)
+                  <input type="number" id="fa-nrc" min="0" step="0.01" value="0" />
+                </label>
+                <label class="span-2">
+                  Installation description
+                  <input type="text" id="fa-nrc-desc" placeholder="e.g. Includes one router and one wireless access point" />
+                </label>
+                <label class="span-2">
+                  Notes
+                  <textarea id="fa-notes" rows="3" placeholder="Anything else that should appear on the service order"></textarea>
+                </label>
+              </div>
+              <label class="check-line">
+                <input type="checkbox" id="fa-term-mtm" />
+                Month-to-month (no contract)
+              </label>
+            </section>
+
+            <section class="fa-card">
+              <h2>Service order line items</h2>
+              <p class="hint" id="fa-lines-hint">Choose a fiber level to pre-fill the monthly row and the installation row.</p>
+              <div class="lines-wrap">
+                <table class="lines-table">
+                  <thead>
+                    <tr>
+                      <th>Description</th>
+                      <th>Charge</th>
+                      <th>Qty</th>
+                      <th>Unit</th>
+                      <th>Amount</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="fa-lines-body"></tbody>
+                </table>
+              </div>
+              <div class="lines-actions">
+                <button type="button" class="btn btn-ghost btn-sm" id="fa-add-line">Add row</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="fa-reset-lines">Reset from fiber level</button>
+              </div>
+            </section>
+
+            <section class="fa-card">
+              <details>
+                <summary>Agreement text (same words as the PDF)</summary>
+                <div class="clause-browser" id="fa-clauses"></div>
+              </details>
+            </section>
+          </div>
+
+          <aside>
+            <section class="fa-card fa-summary">
+              <h2 id="fa-summary-title">Agreement + service order</h2>
+              <div class="price-hero">
+                <span class="price-label">Monthly recurring charge</span>
+                <span class="price-value" id="fa-summary-mrc">$0.00</span>
+                <span class="price-sub" id="fa-summary-speed">Choose a fiber level</span>
+              </div>
+              <div class="summary-lines" id="fa-summary-lines"></div>
+              <button type="button" class="btn btn-primary full" id="fa-pdf-side">Download PDF</button>
+              <button type="button" class="btn btn-ghost full" id="fa-preview-side">Preview</button>
+              <p class="hint">Save keeps this agreement in this browser. Download PDF does not upload it anywhere.</p>
+            </section>
+          </aside>
+        </div>
       </div>
     </main>
   </div>
@@ -242,7 +470,35 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="fa-library-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="fa-library-title">
+      <header class="modal-header">
+        <h2 id="fa-library-title">Saved agreements</h2>
+        <button type="button" class="icon-btn" id="fa-library-close" aria-label="Close">&times;</button>
+      </header>
+      <div class="modal-body">
+        <input type="search" id="fa-library-search" placeholder="Search customer, address, email" aria-label="Search saved agreements" />
+        <div id="fa-library-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="fa-preview-modal" hidden>
+    <div class="modal preview-modal" role="dialog" aria-modal="true" aria-labelledby="fa-preview-title">
+      <header class="modal-header">
+        <h2 id="fa-preview-title">PDF preview</h2>
+        <button type="button" class="icon-btn" id="fa-preview-close" aria-label="Close">&times;</button>
+      </header>
+      <iframe class="preview-frame" id="fa-preview-frame" title="Agreement PDF preview"></iframe>
+    </div>
+  </div>
+
+  <p class="toast" id="fa-toast" hidden role="status"></p>
+
+  <script src="jspdf.umd.min.js"></script>
+  <script src="pdf-doc.js"></script>
   <script src="seed-projects.js"></script>
   <script src="app.js"></script>
+  <script src="fiber-agreements.js"></script>
 </body>
 </html>
